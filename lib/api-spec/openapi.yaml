@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: openai
+    description: AI chat operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /openai/conversations:
+    post:
+      operationId: createConversation
+      tags: [openai]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationBody"
+      responses:
+        "201":
+          description: Conversation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationResponse"
+
+  /openai/conversations/{id}/messages:
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a message and get an AI response (streaming SSE)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiMessageBody"
+      responses:
+        "200":
+          description: Streaming SSE response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+    get:
+      operationId: getConversationMessages
+      tags: [openai]
+      summary: Get all messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesListResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    CreateConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    ConversationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - createdAt
+
+    SendOpenaiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    MessageItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    MessagesListResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageItem"
+      required:
+        - messages
