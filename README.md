@@ -22,3 +22,5 @@ User asks a question → AI processes it → returns a simple and helpful explan
 
 ## Note
 This project is for educational purposes only.
+## 🔗 Live Demo
+https://code-import--naniprabhas1302.replit.app/
